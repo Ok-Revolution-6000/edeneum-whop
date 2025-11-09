@@ -248,7 +248,50 @@ Inspired by Gary Vee's approach:
 
 ---
 
-## Next Steps
+## Next Session: Monorepo Migration
+
+### Goal: Consolidate both Edeneum projects into one private monorepo
+
+**Current Repos:**
+- `edeneum-whop` (public fork - this repo)
+- `Edeneum` (website repo) - https://github.com/Ok-Revolution-6000/Edeneum
+
+**Target Structure:**
+```
+edeneum/  (new private monorepo)
+  ├── apps/
+  │   ├── website/        (v0/vercel production site)
+  │   └── whop-app/       (whop integration)
+  ├── packages/           (shared code - future)
+  │   └── shared/         (types, utils, components)
+  ├── package.json        (pnpm workspace root)
+  └── pnpm-workspace.yaml
+```
+
+**Migration Steps:**
+1. Create new private GitHub repo: `edeneum`
+2. Clone both existing repos locally
+3. Set up pnpm workspace structure
+4. Move `edeneum-whop` → `apps/whop-app/`
+5. Move `Edeneum` → `apps/website/`
+6. Configure workspace package.json files
+7. Test both apps run independently
+8. Commit and push to new monorepo
+9. Update local development to use new repo
+10. Archive/delete old public fork
+
+**Benefits:**
+- ✅ Makes whop app private (current fork can't be made private)
+- ✅ Better code organization
+- ✅ Share types/utils between apps in future
+- ✅ Single source of truth
+- ✅ Easier CI/CD management
+
+**Estimated Time:** 30-45 minutes
+
+---
+
+## Next Steps (After Monorepo)
 1. Continue building out enhanced classical texts in Notion
 2. Create "How I Built This" content for membership tier
 3. Set up additional products in Whop dashboard
@@ -257,6 +300,7 @@ Inspired by Gary Vee's approach:
 
 ---
 
-**Last Updated:** 2025-01-09 22:45 EST
+**Last Updated:** 2025-01-09 23:00 EST
 **Session Duration:** ~3 hours
 **Status:** ✅ Core Notion integration complete and working
+**Next Session:** Monorepo migration
