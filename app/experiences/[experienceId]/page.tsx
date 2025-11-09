@@ -1,7 +1,14 @@
-import { Button } from "@whop/react/components";
 import { headers } from "next/headers";
-import Link from "next/link";
 import { whopsdk } from "@/lib/whop-sdk";
+import { getNotionPage } from "@/lib/get-notion-page";
+import { NOTION_PAGES } from "@/lib/notion-client";
+import { NotionRenderer } from "@/components/notion-renderer";
+
+// Product IDs for different content
+const PRODUCTS = {
+	FREE_CHAPTER: "prod_BYEzhE8cReSD9", // Enhanced Ethics Book 1, Ch 1
+	MEMBERSHIP: "prod_wxz7BAYlwrnr8", // Edeneum Membership
+};
 
 export default async function ExperiencePage({
 	params,
@@ -21,40 +28,60 @@ export default async function ExperiencePage({
 
 	const displayName = user.name || `@${user.username}`;
 
+	// Check which products the user has access to
+	const userProducts = experience.products.map((p) => p.id);
+	const hasFreeChapter = userProducts.includes(PRODUCTS.FREE_CHAPTER);
+	const hasMembership = userProducts.includes(PRODUCTS.MEMBERSHIP);
+
+	// Fetch Notion content if user has access to free chapter
+	let freeChapterContent = null;
+	if (hasFreeChapter) {
+		try {
+			freeChapterContent = await getNotionPage(NOTION_PAGES.FREE_CHAPTER);
+		} catch (error) {
+			console.error("Failed to fetch Notion content:", error);
+		}
+	}
+
 	return (
-		<div className="flex flex-col p-8 gap-4">
-			<div className="flex justify-between items-center gap-4">
-				<h1 className="text-9">
-					Hi <strong>{displayName}</strong>!
-				</h1>
-				<Link href="https://docs.whop.com/apps" target="_blank">
-					<Button variant="classic" className="w-full" size="3">
-						Developer Docs
-					</Button>
-				</Link>
+		<div className="flex flex-col h-screen">
+			{/* Header */}
+			<div className="flex justify-between items-center gap-4 p-6 border-b border-gray-a4">
+				<div>
+					<h1 className="text-6 font-bold">Edeneum</h1>
+					<p className="text-2 text-gray-10">Welcome, {displayName}</p>
+				</div>
 			</div>
 
-			<p className="text-3 text-gray-10">
-				Welcome to you whop app! Replace this template with your own app. To
-				get you started, here's some helpful data you can fetch from whop.
-			</p>
-
-			<h3 className="text-6 font-bold">Experience data</h3>
-			<JsonViewer data={experience} />
-
-			<h3 className="text-6 font-bold">User data</h3>
-			<JsonViewer data={user} />
-
-			<h3 className="text-6 font-bold">Access data</h3>
-			<JsonViewer data={access} />
+			{/* Content Area */}
+			<div className="flex-1 overflow-auto">
+				{hasFreeChapter && freeChapterContent ? (
+					<NotionRenderer content={freeChapterContent} />
+				) : hasFreeChapter && !freeChapterContent ? (
+					<div className="flex flex-col items-center justify-center h-full p-8 gap-4">
+						<h2 className="text-7 font-bold">Loading...</h2>
+						<p className="text-3 text-gray-10">
+							Fetching your content from Notion
+						</p>
+					</div>
+				) : hasMembership ? (
+					<div className="flex flex-col items-center justify-center h-full p-8 gap-4">
+						<h2 className="text-7 font-bold">Membership Resources</h2>
+						<p className="text-3 text-gray-10 text-center max-w-xl">
+							Welcome to your membership! Community and resources will be added
+							here soon.
+						</p>
+					</div>
+				) : (
+					<div className="flex flex-col items-center justify-center h-full p-8 gap-4">
+						<h2 className="text-7 font-bold">No Access</h2>
+						<p className="text-3 text-gray-10 text-center max-w-xl">
+							You don't have access to any content yet. Please purchase a
+							product to get started.
+						</p>
+					</div>
+				)}
+			</div>
 		</div>
-	);
-}
-
-function JsonViewer({ data }: { data: any }) {
-	return (
-		<pre className="text-2 border border-gray-a4 rounded-lg p-4 bg-gray-a2 max-h-72 overflow-y-auto">
-			<code className="text-gray-10">{JSON.stringify(data, null, 2)}</code>
-		</pre>
 	);
 }
